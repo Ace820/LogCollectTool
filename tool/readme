@@ -1,0 +1,28 @@
+LogCollectTool/tool
+---------------------
+This dir is for save some useful tools,including bin file to collect every kind of logs,and some profiles.
+
+Now,we have such files:
+
+Android.mk
+-------------
+Android.mk can copy bin file and profiles to system.
+
+
+
+init.log.rc
+-------------
+This file include some services and properties ,which will be called by LogCollectTool.apk.
+init.log.rc should be import by init.rc by add "import init.log.rc" at the top of the init.rc.And compile into boot.img.
+
+
+
+LogCollectTool.te
+-------------
+Due to our tool run the collect logic by set properties to trigger actions,the tool may be denied by selinux.We should add permissions to support it.
+
+
+
+cKLog
+-------------
+cKLog is the bin file which can collect kernel logs.
