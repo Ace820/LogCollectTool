@@ -1,7 +1,5 @@
 package com.thundersoft.logcollecttool;
 
-import android.util.Log;
-
 import java.lang.reflect.Method;
 
 /**
