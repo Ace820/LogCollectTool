@@ -22,7 +22,6 @@ public class LogType extends AppCompatActivity {
     public CheckBox checkBox;
     public String name;
     public String property;
-    public boolean value;
     public int id;
     public RelativeLayout.LayoutParams parms;
     private final int BaseID = 500;
@@ -33,38 +32,24 @@ public class LogType extends AppCompatActivity {
         this.parms = new RelativeLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
-        this.checkBox = new CheckBox(content);
-        this.checkBox.setTextSize(TypedValue.COMPLEX_UNIT_DIP,20);
-        this.checkBox.setText(this.name);
-        this.checkBox.setId(this.id);
-        this.checkBox.setGravity(Gravity.CENTER);
-        this.checkBox.setLayoutParams(parms);
-        this.checkBox.setGravity(Gravity.CENTER);
-        this.parms.addRule(RelativeLayout.CENTER_IN_PARENT);
-        this.checkBox.setChecked(PropertyFunctions.propertyGet(this.property));
-        this.checkBox.setOnClickListener(new CheckBoxClick(checkBox,this.property));
+        checkBox = new CheckBox(content);
+        checkBox.setTextSize(TypedValue.COMPLEX_UNIT_DIP,20);
+        checkBox.setText(this.name);
+        checkBox.setId(this.id);
+        checkBox.setGravity(Gravity.CENTER);
+        checkBox.setLayoutParams(parms);
+        checkBox.setGravity(Gravity.CENTER);
+        parms.addRule(RelativeLayout.CENTER_IN_PARENT);
+        checkBox.setChecked(PropertyFunctions.propertyGet(this.property));
+        checkBox.setOnClickListener(new CheckBoxClick());
     }
     private class CheckBoxClick implements View.OnClickListener {
-        private CheckBox CB;
-        private String prop;
-
-        public CheckBoxClick(CheckBox CB,String prop) {
-            this.CB = CB;
-            this.prop = prop;
-
-        }
-
         public void onClick(View v) {
-            CheckBox cBox = this.CB;
-            try {
-                if (cBox.isChecked()) {
-                    PropertyFunctions.propertySet(this.prop,"1");
+                if (checkBox.isChecked()) {
+                    PropertyFunctions.propertySet(property,"1");
                 } else {
-                    PropertyFunctions.propertySet(this.prop,"0");
+                    PropertyFunctions.propertySet(property,"0");
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 }
