@@ -40,6 +40,7 @@ public class LogType extends AppCompatActivity {
         checkBox.setLayoutParams(parms);
         checkBox.setGravity(Gravity.CENTER);
         parms.addRule(RelativeLayout.CENTER_IN_PARENT);
+        parms.addRule(RelativeLayout.CENTER_HORIZONTAL,this.id);
         checkBox.setChecked(PropertyFunctions.propertyGet(this.property));
         checkBox.setOnClickListener(new CheckBoxClick());
     }
