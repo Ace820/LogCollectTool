@@ -1,11 +1,14 @@
 package com.thundersoft.logcollecttool;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -81,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("*/*");
+                intent.setType("text/*.ini");
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 try {
                     startActivityForResult(Intent.createChooser(intent,"Choose a profile"),0);
@@ -131,19 +134,40 @@ public class MainActivity extends AppCompatActivity {
         }
         uri = data.getData();
         Log.d(TAG,"get file path:"+uri.getPath());
+        // check file read permission
+        if (Build.VERSION.SDK_INT >= 23) {
+            int REQUEST_CODE_CONTACT = 101;
+            String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE};
+            //check if permission allowed
+            for (String str : permissions) {
+                if (this.checkSelfPermission(str) != PackageManager.PERMISSION_GRANTED) {
+                    this.requestPermissions(permissions, REQUEST_CODE_CONTACT);
+                    return;
+                }
+            }
+        }
+        //analyse file
         try {
             BufferedReader reader = new BufferedReader(new FileReader(new File(uri.getPath())));
             if (!reader.readLine().equals("LogCollectTool")){
                 //TODO start a Dialog to warn not correct file
+                Toast.makeText(MainActivity.this,"Profile not right!",Toast.LENGTH_SHORT).show();
                 return;
             }
             while ((tempStr = reader.readLine()) != null ) {
-                String[] value = tempStr.split("|");
+                String[] value = tempStr.split(":");
                 if (value.length !=2 ){
                     //TODO start a Dialog to warn line error
+                    Toast.makeText(MainActivity.this,"line format error:"+tempStr,Toast.LENGTH_SHORT).show();
                 } else {
-                    name += value[0];
-                    property += value[1];
+                    if(name.equals("")) {
+                        name = name +  value[0];
+                        property = property +  value[1];
+
+                    } else {
+                        name = name + ":" + value[0];
+                        property = property + ":" + value[1];
+                    }
                 }
             }
             if (!name.equals("")) {
@@ -151,6 +175,12 @@ public class MainActivity extends AppCompatActivity {
                 editor.putString("property", property);
             }
             editor.commit();
+            //restart main activity
+            Intent intent = getIntent();
+            overridePendingTransition(0,0);
+            intent.addFlags(intent.FLAG_ACTIVITY_NO_ANIMATION);
+            finish();
+            startActivity(intent);
         } catch (IOException e) {
             e.printStackTrace();
         }
