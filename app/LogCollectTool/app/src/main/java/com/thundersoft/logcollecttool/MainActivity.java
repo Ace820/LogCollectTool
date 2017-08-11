@@ -12,12 +12,13 @@ import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -35,9 +36,31 @@ public class MainActivity extends AppCompatActivity {
         createView();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(1,1,1, "get config from file");
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == 1) {
+            //TODO add broswer profile logic
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("text/*.ini");
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            try {
+                startActivityForResult(Intent.createChooser(intent,"Choose a profile"),0);
+            } catch (ActivityNotFoundException e) {
+                Toast.makeText(MainActivity.this,"Can not find File explorer",Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
     protected void createView() {
         RelativeLayout frameLayout = new RelativeLayout(this);
-        Button getProfile = new Button(this);
+        Button cCLog = new Button(this);
         Button uploadNow = new Button(this);
         SharedPreferences sP = getSharedPreferences("logType",Activity.MODE_PRIVATE);
         String names = sP.getString("name","");
@@ -46,57 +69,47 @@ public class MainActivity extends AppCompatActivity {
         if (names.equals("")){
             //TODO: may need a dialog to ask if need to import a profile
             name = new String[]{"kernel log","logcat"};
-            property = new String[]{"persist.sys.cKLog","persist.sys.cLogcat"};
+            property = new String[]{"persist.sys.logTool.cKLog","persist.sys.logTool.cLogcat"};
         } else {
             name = names.split(":");
             property = properties.split(":");
         }
         LogType[] checkBox =new LogType[name.length];
         Log.d(TAG,"name length="+name.length);
-        if (name.length >1) {
-            for (int i = 0; i < name.length; i++) {
-                checkBox[i] = new LogType(name[i], property[i], i, this);
-            }
-            if (checkBox.length != 1) {
-                for (int i = (checkBox.length / 2 - 1); i >= 0; i--) {
-                    checkBox[i].parms.addRule(RelativeLayout.ABOVE, checkBox[i + 1].id);
-                    checkBox[i].parms.addRule(RelativeLayout.ALIGN_LEFT, checkBox[i + 1].id);
-                }
-                for (int i = (checkBox.length / 2 + 1); i < checkBox.length; i++) {
-                    checkBox[i].parms.addRule(RelativeLayout.BELOW, checkBox[i - 1].id);
-                    checkBox[i].parms.addRule(RelativeLayout.ALIGN_LEFT, checkBox[i - 1].id);
-                }
-                for (int i = 0; i < name.length; i++) {
-                    frameLayout.addView(checkBox[i].checkBox);
-                }
-            }
-        } else {
-            checkBox[0] = new LogType("kernel log","persist.sys.cKLog", 0, this);
+        for (int i = 0; i < name.length; i++) {
+            checkBox[i] = new LogType(name[i], property[i], i, this);
         }
-        //Button get profile
-        RelativeLayout.LayoutParams profileParms = new RelativeLayout.LayoutParams(
+        if (checkBox.length != 1) {
+            for (int i = (checkBox.length / 2 - 1); i >= 0; i--) {
+                checkBox[i].parms.addRule(RelativeLayout.ABOVE, checkBox[i + 1].id);
+                checkBox[i].parms.addRule(RelativeLayout.ALIGN_LEFT, checkBox[i + 1].id);
+            }
+            for (int i = (checkBox.length / 2 + 1); i < checkBox.length; i++) {
+                checkBox[i].parms.addRule(RelativeLayout.BELOW, checkBox[i - 1].id);
+                checkBox[i].parms.addRule(RelativeLayout.ALIGN_LEFT, checkBox[i - 1].id);
+            }
+        }
+        for (int i = 0; i < name.length; i++) {
+            frameLayout.addView(checkBox[i].checkBox);
+        }
+        //TODO change this button to collect immediately log
+        RelativeLayout.LayoutParams cCLogParms = new RelativeLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
-        getProfile.setLayoutParams(profileParms);
-        getProfile.setId(50);
-        getProfile.setText("get profile");
-        getProfile.setOnClickListener(new View.OnClickListener() {
+        cCLog.setLayoutParams(cCLogParms);
+        cCLog.setId(50);
+        cCLog.setText("Collect Critical log");
+        cCLog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("text/*.ini");
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                try {
-                    startActivityForResult(Intent.createChooser(intent,"Choose a profile"),0);
-                } catch (ActivityNotFoundException e) {
-                    Toast.makeText(MainActivity.this,"Can not find File explorer",Toast.LENGTH_SHORT).show();
-                    e.printStackTrace();
-                }
+                PropertyFunctions.propertySet("sys.logCollectTool.cCLog","1");
+                Toast.makeText(MainActivity.this,"Collecting critical log...",Toast.LENGTH_SHORT).show();
+                Log.d(TAG,"Collecting critical log....");
             }
         });
-        profileParms.addRule(RelativeLayout.BELOW,checkBox[checkBox.length-1].id);
-        getProfile.setWidth(getWindowManager().getDefaultDisplay().getWidth()/2);
-        frameLayout.addView(getProfile);
+        cCLogParms.addRule(RelativeLayout.BELOW,checkBox[checkBox.length-1].id);
+        cCLog.setWidth(getWindowManager().getDefaultDisplay().getWidth()/2);
+        frameLayout.addView(cCLog);
         //button upload immediately
         RelativeLayout.LayoutParams uploadParms = new RelativeLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
