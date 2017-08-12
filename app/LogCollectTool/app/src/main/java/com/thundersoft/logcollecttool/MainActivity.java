@@ -4,20 +4,24 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,6 +30,8 @@ import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
+    public TextView textView;
+    RelativeLayout frameLayout;
     public final String TAG = "LogCollectTool";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +44,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(1,1,1, "get config from file");
+        menu.add(1,1,1, "Import config");
+        menu.add(1,2,2, "User Guide");
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -54,14 +61,31 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this,"Can not find File explorer",Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
+        } else if (item.getItemId() == 2) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("User Guide");
+            //TODO complete the User Guide
+            builder.setMessage("LogCollectTool:\n" +
+                    "    Check the checkbox to Collect logs,and uncheck the checkbox to cancel collect.\n" +
+                    "    If you want to change the log type via config files,you can click menu->Import config to import a config file." +
+                    "    If you think the device have some errors,you can click COLLECT CRITICAL LOG button to collect more logs.\n" +
+                    "    You can click UPLOAD NOW button to upload logs to server immediately.");
+            builder.setPositiveButton("OK",null);
+            builder.show();
         }
         return false;
     }
 
     protected void createView() {
-        RelativeLayout frameLayout = new RelativeLayout(this);
+        frameLayout = new RelativeLayout(this);
         Button cCLog = new Button(this);
         Button uploadNow = new Button(this);
+        textView = new TextView(this);
+
+        //description for tools
+        textView.setText("");
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP,12);
+        frameLayout.addView(textView);
         SharedPreferences sP = getSharedPreferences("logType",Activity.MODE_PRIVATE);
         String names = sP.getString("name","");
         String properties = sP.getString("property","");
