@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -13,7 +14,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -29,8 +30,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,9 +40,6 @@ public class MainActivity extends AppCompatActivity {
     final int CHECKBOX_ID_BASE = 10;
     final int UPLOADNOW_ID = 20;
     final int CRITICALLOG_ID = 21;
-    final int TEXTVIEW_ID = 30;
-    final int EDITTEXT_ID = 31;
-    final int SPINNER_ID = 32;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         menu.add(1,1,1, "Import config");
         menu.add(1,2,2, "User Guide");
+        menu.add(1,3,3, "Upload Config");
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -86,6 +83,30 @@ public class MainActivity extends AppCompatActivity {
                     "    You can click UPLOAD NOW button to upload logs to server immediately.");
             builder.setPositiveButton("OK",null);
             builder.show();
+        } else if (item.getItemId() == 3) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            LinearLayout uploadConfig = (LinearLayout)getLayoutInflater().inflate(R.layout.item_upload_config,null);
+            builder.setView(uploadConfig);
+
+            final EditText editText = (EditText)uploadConfig.findViewById(R.id.editText);
+
+            final String[] list = {"MB","Hour"};
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,list);
+            adapter.setDropDownViewResource(android.R.layout.simple_list_item_multiple_choice);
+            final Spinner spinner = (Spinner)uploadConfig.findViewById(R.id.spinner);
+            spinner.setAdapter(adapter);
+
+            builder.setCancelable(true);
+            builder.setTitle("Set Log collect config");
+            builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    Toast.makeText(MainActivity.this,editText.getText()+" "+spinner.getSelectedItem(),Toast.LENGTH_SHORT).show();
+                }
+            });
+            builder.setNegativeButton("Cancel",null);
+            AlertDialog dialog = builder.create();
+            dialog.show();
         }
         return false;
     }
@@ -162,47 +183,6 @@ public class MainActivity extends AppCompatActivity {
         uploadParms.addRule(RelativeLayout.BELOW,checkBox[checkBox.length-1].id);
         uploadParms.addRule(RelativeLayout.RIGHT_OF,CRITICALLOG_ID);
         frameLayout.addView(uploadNow);
-        // upload style choose
-        RelativeLayout.LayoutParams textParms = new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        textParms.addRule(RelativeLayout.BELOW,CRITICALLOG_ID);
-        textParms.addRule(RelativeLayout.FOCUS_LEFT);
-        textView = new TextView(this);
-        textView.setLayoutParams(textParms);
-        textView.setText("Auto upload logs every");
-        textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP,18);
-        textView.setId(TEXTVIEW_ID);
-        textView.setWidth(windowWidth/2);
-        frameLayout.addView(textView);
-        RelativeLayout.LayoutParams editParms = new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        editParms.addRule(RelativeLayout.BELOW,CRITICALLOG_ID);
-        editParms.addRule(RelativeLayout.RIGHT_OF,TEXTVIEW_ID);
-        editParms.addRule(RelativeLayout.ALIGN_BASELINE,TEXTVIEW_ID);
-        EditText editText = new EditText(this);
-        editText.setWidth(windowWidth/5);
-        editText.setId(EDITTEXT_ID);
-        editText.setTextSize(TypedValue.COMPLEX_UNIT_DIP,18);
-        editText.setLayoutParams(editParms);
-        frameLayout.addView(editText);
-        RelativeLayout.LayoutParams spinnerLayout = new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        spinnerLayout.addRule(RelativeLayout.RIGHT_OF,EDITTEXT_ID);
-        spinnerLayout.addRule(RelativeLayout.BELOW,CRITICALLOG_ID);
-        List<String> list = new ArrayList<String>();
-        list.add("MB");
-        list.add("Hour");
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,list);
-        adapter.setDropDownViewResource(android.R.layout.simple_list_item_multiple_choice);
-        Spinner spinner = new Spinner(this);
-        spinner.setAdapter(adapter);
-        spinner.setId(SPINNER_ID);
-        spinner.setLayoutParams(spinnerLayout);
-        spinner.setMinimumWidth(windowWidth/5);
-        frameLayout.addView(spinner);
 
         setContentView(frameLayout);
     }
